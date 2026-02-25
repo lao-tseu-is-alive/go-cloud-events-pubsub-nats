@@ -157,6 +157,11 @@ Usage of nats-basic:
 - [NATS Go Client](https://github.com/nats-io/nats.go)
 - **JetStream** — for persistent, at-least-once / exactly-once delivery: [JetStream docs](https://docs.nats.io/nats-concepts/jetstream)
 - **NATS CLI** — a handy tool to inspect subjects, publish, subscribe, and manage streams: [nats-io/natscli](https://github.com/nats-io/natscli)
+ with NATS CLI you can also put to test our example : ./nats-basic -mode sub -subject "events.>
+    
+
+    NATS_URL=nats://127.0.0.1:4222 nats publish "events.order.created" "{order: 1, client: 2}"
+
 
 ## License
 
