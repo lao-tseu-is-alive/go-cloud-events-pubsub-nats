@@ -13,11 +13,28 @@ A simple Go example demonstrating the **Publish/Subscribe** messaging pattern wi
 ## Prerequisites
 
 - **Go 1.25+**
-- **A running NATS server** — the easiest way is with Docker:
+- **A running NATS server** —  pick your preferred method of [installing a NATS Server](https://docs.nats.io/running-a-nats-service/introduction/installation)
+
+### with Docker
 
 ```bash
 docker run -d --name nats-server -p 4222:4222 -p 8222:8222 nats:latest
 ```
+
+###  from your terminal :
+
+install nats-server via [command line](https://docs.nats.io/running-a-nats-service/introduction/installation#getting-the-binary-from-the-command-line) 
+or your [package manager](https://docs.nats.io/running-a-nats-service/introduction/installation#installing-via-a-package-manager) 
+
+then run it directly (in dev):
+```bash
+nats-server -js -DV -sd ./nats_data -m 8222
+```
+or with our helper script :
+```bash
+scripts/runNatsStreamServerDev.sh
+```
+
 
 | Port | Purpose                              |
 |------|--------------------------------------|
@@ -51,11 +68,22 @@ Open a second terminal and publish:
 ```bash
 ./nats-basic -mode pub -subject "greetings" -msg "Hello NATS World!"
 ```
+You should see the terminal print:
+
+```
+[pub] 2026/02/25 10:45:20 Connecting to NATS server at nats://127.0.0.1:4222 …
+[pub] 2026/02/25 10:45:20 ✅ Connected to NATS server successfully.
+[pub] 2026/02/25 10:45:20 Publishing to subject "greetings" …
+[pub] 2026/02/25 10:45:20 ✅ Message published — subject: "greetings", payload: "Hello NATS World!"
+```
 
 You should see the subscriber terminal print:
 
 ```
-[sub] 2026/02/24 16:40:00 📩 Received on [greetings]: Hello NATS World!
+[sub] 2026/02/25 10:45:12 Connecting to NATS server at nats://127.0.0.1:4222 …
+[sub] 2026/02/25 10:45:12 ✅ Connected to NATS server successfully.
+[sub] 2026/02/25 10:45:12 Subscribing to subject "greetings" — waiting for messages (Ctrl+C to quit) …
+[sub] 2026/02/25 10:45:20 📩 Received on [greetings]: Hello NATS World!
 ```
 
 ### 4. Try wildcards
@@ -77,6 +105,14 @@ NATS supports two wildcard tokens in subject names:
 ```
 
 Both messages will be received by the single subscriber.
+
+```
+[sub] 2026/02/25 10:48:32 Connecting to NATS server at nats://127.0.0.1:4222 …
+[sub] 2026/02/25 10:48:32 ✅ Connected to NATS server successfully.
+[sub] 2026/02/25 10:48:32 Subscribing to subject "events.>" — waiting for messages (Ctrl+C to quit) …
+[sub] 2026/02/25 10:49:15 📩 Received on [events.user.login]: {"user":"alice"}
+[sub] 2026/02/25 10:49:29 📩 Received on [events.order.created]: {"order":42}
+```
 
 ## CLI Reference
 
