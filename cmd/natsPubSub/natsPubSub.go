@@ -39,6 +39,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -50,10 +51,12 @@ import (
 )
 
 const (
+	APP        = "natsPubSub"
+	VERSION    = "0.1.0"
+	REPOSITORY = "https://github.com/lao-tseu-is-alive/go-cloud-events-pubsub-nats"
 	// modePub and modeSub are the two operating modes of this program.
 	modePub = "pub"
 	modeSub = "sub"
-	APP     = "NATS-BASIC"
 )
 
 func main() {
@@ -89,6 +92,16 @@ func main() {
 	// Prefix the log output with the mode so it's easy to distinguish
 	// publisher vs subscriber output in your terminals.
 	l := log.New(os.Stdout, fmt.Sprintf("%s [%s] ", APP, *mode), log.LstdFlags)
+	l.Printf("🚀  Starting %s v%s in mode [%s], from %s\n", APP, VERSION, *mode, REPOSITORY)
+
+	// ─── Read credentials from environment ─────────────────────────────
+	// NATS_USER and NATS_ENCRYPTED_PASSWORD should be set in your .env file
+	// and exported before running this program (e.g. via scripts/execWithEnv.sh).
+	natsUser := os.Getenv("NATS_USER")
+	natsPass := os.Getenv("NATS_PASSWORD")
+	if natsUser == "" || natsPass == "" {
+		l.Fatal("💥 NATS_USER and NATS_PASSWORD environment variables must be set")
+	}
 
 	// ─── Connect to NATS ───────────────────────────────────────────────
 	// nats.Connect establishes a TCP connection to the NATS server.
@@ -97,9 +110,14 @@ func main() {
 	l.Printf("Connecting to NATS server at %s …", *natsURL)
 	// Connections can be assigned a name which will appear in some of the server monitoring data
 	// it is highly recommended as a friendly connection name will help in monitoring, error reporting, debugging, and testing.
-	nc, err := nats.Connect(*natsURL, nats.Name(APP))
+	// nats.UserInfo provides username/password authentication for the connection.
+	l.Printf("About to connect with user:%s and pass: %s !", natsUser, natsPass)
+	nc, err := nats.Connect(*natsURL, nats.Name(APP), nats.UserInfo(natsUser, natsPass))
 	if err != nil {
-		l.Fatalf("💥 Failed to connect to NATS at %s: %v", *natsURL, err)
+		l.Printf("💥 Failed to connect to NATS at %s: %v", *natsURL, err)
+		if errors.Is(err, nats.ErrAuthorization) {
+			l.Fatalf("Authorization for user:%s and pass: %s failed", natsUser, natsPass)
+		}
 	}
 	// Always close the connection when done to release resources.
 	defer nc.Close()
