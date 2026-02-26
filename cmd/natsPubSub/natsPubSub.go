@@ -95,7 +95,7 @@ func main() {
 	l.Printf("🚀  Starting %s v%s in mode [%s], from %s\n", APP, VERSION, *mode, REPOSITORY)
 
 	// ─── Read credentials from environment ─────────────────────────────
-	// NATS_USER and NATS_ENCRYPTED_PASSWORD should be set in your .env file
+	// NATS_USER and NATS_PASSWORD should be set in your .env file
 	// and exported before running this program (e.g. via scripts/execWithEnv.sh).
 	natsUser := os.Getenv("NATS_USER")
 	natsPass := os.Getenv("NATS_PASSWORD")
@@ -108,10 +108,11 @@ func main() {
 	// It will automatically attempt to reconnect if the connection drops.
 	// The returned *nats.Conn is safe for concurrent use.
 	l.Printf("Connecting to NATS server at %s …", *natsURL)
-	// Connections can be assigned a name which will appear in some of the server monitoring data
-	// it is highly recommended as a friendly connection name will help in monitoring, error reporting, debugging, and testing.
 	// nats.UserInfo provides username/password authentication for the connection.
 	l.Printf("About to connect with user:%s and pass: %s !", natsUser, natsPass)
+	// maybe consider using nkey https://docs.nats.io/using-nats/developer/connecting/nkey
+	// Connections can be assigned a name which will appear in some of the server monitoring data
+	// it is highly recommended as a friendly connection name will help in monitoring, error reporting, debugging, and testing.
 	nc, err := nats.Connect(*natsURL, nats.Name(APP), nats.UserInfo(natsUser, natsPass))
 	if err != nil {
 		l.Printf("💥 Failed to connect to NATS at %s: %v", *natsURL, err)
