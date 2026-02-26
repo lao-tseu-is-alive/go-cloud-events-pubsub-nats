@@ -53,6 +53,7 @@ const (
 	// modePub and modeSub are the two operating modes of this program.
 	modePub = "pub"
 	modeSub = "sub"
+	APP     = "NATS-BASIC"
 )
 
 func main() {
@@ -87,14 +88,16 @@ func main() {
 	// ─── Logger Setup ──────────────────────────────────────────────────
 	// Prefix the log output with the mode so it's easy to distinguish
 	// publisher vs subscriber output in your terminals.
-	l := log.New(os.Stdout, fmt.Sprintf("[%s] ", *mode), log.LstdFlags)
+	l := log.New(os.Stdout, fmt.Sprintf("%s [%s] ", APP, *mode), log.LstdFlags)
 
 	// ─── Connect to NATS ───────────────────────────────────────────────
 	// nats.Connect establishes a TCP connection to the NATS server.
 	// It will automatically attempt to reconnect if the connection drops.
 	// The returned *nats.Conn is safe for concurrent use.
 	l.Printf("Connecting to NATS server at %s …", *natsURL)
-	nc, err := nats.Connect(*natsURL)
+	// Connections can be assigned a name which will appear in some of the server monitoring data
+	// it is highly recommended as a friendly connection name will help in monitoring, error reporting, debugging, and testing.
+	nc, err := nats.Connect(*natsURL, nats.Name(APP))
 	if err != nil {
 		l.Fatalf("💥 Failed to connect to NATS at %s: %v", *natsURL, err)
 	}
